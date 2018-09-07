@@ -1,8 +1,10 @@
 //app.js
 App({
+
   onLaunch: function () {
     var that = this;
-    //  获取商城名称
+    
+    //获取商城名称
     wx.request({
       url: 'https://api.it120.cc/'+ that.globalData.subDomain +'/config/get-value',
       data: {
@@ -14,11 +16,17 @@ App({
         }
       }
     })
+
+    //然后登录
     this.login();
   },
+
+  //登录
   login : function () {
     var that = this;
     var token = that.globalData.token;
+
+    //如果token存在, 检查token(token成功不做任何操作, 失败置空token, 调用登录)
     if (token) {
       wx.request({
         url: 'https://api.it120.cc/' + that.globalData.subDomain + '/user/check-token',
@@ -34,6 +42,8 @@ App({
       })
       return;
     }
+
+    //请求微信登录,微信登录成功后, 向后台登录
     wx.login({
       success: function (res) {
         wx.request({
@@ -42,11 +52,15 @@ App({
             code: res.code
           },
           success: function(res) {
+
+            //如果账号不存在, 则进行注册
             if (res.data.code == 10000) {
               // 去注册
               that.registerUser();
               return;
             }
+
+            //如果有错，提示登录错误
             if (res.data.code != 0) {
               // 登录错误
               wx.hideLoading();
@@ -57,7 +71,9 @@ App({
               })
               return;
             }
+
             //console.log(res.data.data)
+            //设置全局数据
             that.globalData.token = res.data.data.token;
             that.globalData.uid = res.data.data.uid;
           }
@@ -65,8 +81,11 @@ App({
       }
     })
   },
+
+  //用户注册
   registerUser: function () {
     var that = this;
+    // 微信登录，登录成功后获取用户信息, 获取用户信息后进行注册
     wx.login({
       success: function (res) {
         var code = res.code; // 微信登录接口返回的 code 参数，下面注册接口需要用到
@@ -88,6 +107,8 @@ App({
       }
     })
   },
+
+  //
   sendTempleMsg: function (orderId, trigger, template_id, form_id, page, postJsonString){
     var that = this;
     wx.request({
@@ -114,6 +135,8 @@ App({
       }
     })
   },
+
+  //全局数据
   globalData:{
     userInfo:null,
     subDomain: "tz",
